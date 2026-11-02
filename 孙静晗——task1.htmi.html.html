@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>番剧推荐 · 一个大学生的追番手帐</title>
+<style>
+  :root {
+    --bg: #f7f4ec;           /* 米白色漫画纸背景 */
+    --bg-soft: #efeadf;
+    --ink: #3a3a37;          /* 深灰色文字 */
+    --ink-light: #6f6e68;
+    --accent: #c9556e;       /* 樱花粉红点缀 */
+    --accent-deep: #a83f57;
+    --accent-soft: #f7e3e7;
+    --blue: #4a7fae;         /* 少量蓝色点缀（气泡） */
+    --border: #d8d2c4;
+    --card-bg: #fffdf8;
+    --shadow: 0 2px 10px rgba(80, 74, 60, 0.08);
+    --shadow-hover: 0 8px 22px rgba(201, 85, 110, 0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.8;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ---------- 漫画纸网点背景 ---------- */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(rgba(58, 58, 55, 0.05) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ---------- 装饰图形 ---------- */
+  .deco-bubble {
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid var(--blue);
+    background: transparent;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bubble-1 { width: 70px; height: 70px; top: 120px; left: 4%; opacity: 0.25; }
+  .bubble-2 { width: 34px; height: 34px; top: 200px; left: 9%; opacity: 0.2; }
+  .bubble-3 { width: 90px; height: 90px; top: 340px; right: 5%; border-color: var(--accent); opacity: 0.2; }
+
+  /* 速度线装饰 */
+  .speed-lines {
+    position: absolute;
+    top: 620px;
+    right: -30px;
+    width: 200px;
+    height: 200px;
+    background: repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(201, 85, 110, 0.10) 0deg 4deg,
+      transparent 4deg 14deg
+    );
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 对话气泡 */
+  .speech-bubble {
+    position: absolute;
+    top: 130px;
+    right: 12%;
+    background: var(--card-bg);
+    border: 2px solid var(--ink);
+    border-radius: 16px 16px 16px 4px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent-deep);
+    box-shadow: var(--shadow);
+    transform: rotate(3deg);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ---------- 顶部导航 ---------- */
+  header {
+    background: rgba(247, 244, 236, 0.94);
+    backdrop-filter: blur(6px);
+    border-bottom: 3px solid var(--ink);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .nav {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .blog-name {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--ink);
+    text-decoration: none;
+    position: relative;
+  }
+  .blog-name::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 3px;
+    opacity: 0.7;
+  }
+  .blog-name span { font-size: 0.75rem; letter-spacing: 2px; color: var(--ink-light); margin-left: 10px; font-weight: 400; }
+  nav a {
+    color: var(--ink);
+    text-decoration: none;
+    margin-left: 26px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding-bottom: 3px;
+    border-bottom: 3px solid transparent;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav a:hover { color: var(--accent-deep); border-bottom-color: var(--accent); }
+
+  /* ---------- 欢迎区 ---------- */
+  .hero {
+    padding: 90px 0 70px;
+    text-align: center;
+  }
+  .hero-kicker {
+    display: inline-block;
+    font-size: 0.8rem;
+    letter-spacing: 5px;
+    font-weight: 700;
+    color: var(--card-bg);
+    background: var(--ink);
+    border-radius: 999px;
+    padding: 5px 20px;
+    margin-bottom: 26px;
+    transform: rotate(-1.5deg);
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 8px;
+    margin-bottom: 18px;
+    text-shadow: 3px 3px 0 var(--accent-soft);
+  }
+  .hero p {
+    max-width: 560px;
+    margin: 0 auto 36px;
+    color: var(--ink-light);
+    font-size: 1.05rem;
+  }
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #fffdf8;
+    padding: 12px 34px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover {
+    background: var(--accent-deep);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  /* ---------- 文章区 ---------- */
+  .section-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    margin: 30px 0 8px;
+  }
+  .section-title em {
+    font-style: normal;
+    color: var(--accent-deep);
+  }
+  .section-sub {
+    text-align: center;
+    color: var(--ink-light);
+    font-size: 0.88rem;
+    margin-bottom: 30px;
+  }
+  .filters {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--card-bg);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    padding: 6px 22px;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 3px 3px 0 rgba(58,58,55,0.15);
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent-deep); transform: translateY(-2px); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--ink);
+    color: #fffdf8;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 80px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 28px 26px;
+    box-shadow: 5px 5px 0 rgba(58, 58, 55, 0.12);
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  /* 漫画分格顶部色条 */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent) 0 24px,
+      var(--blue) 24px 48px,
+      var(--ink) 48px 54px
+    );
+    opacity: 0.55;
+  }
+  .card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0 rgba(201, 85, 110, 0.2);
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    margin-top: 6px;
+  }
+  .tag-cat {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+    color: var(--card-bg);
+    background: var(--blue);
+    padding: 3px 12px;
+    border-radius: 4px;
+  }
+  .card[data-cat="个人"] .tag-cat { background: var(--accent); }
+  .card-type { font-size: 0.78rem; color: var(--ink-light); }
+  .card h3 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .card .summary {
+    color: var(--ink-light);
+    font-size: 0.93rem;
+    margin-bottom: 18px;
+    flex-grow: 1;
+  }
+  .read-btn {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--accent-deep);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    border-bottom: 2px dashed var(--accent);
+    transition: opacity 0.2s;
+  }
+  .read-btn:hover { opacity: 0.7; }
+
+  .fulltext {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, margin 0.4s ease;
+  }
+  .fulltext.open {
+    max-height: 800px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .fulltext-inner {
+    border-top: 2px dashed var(--border);
+    padding-top: 16px;
+    font-size: 0.92rem;
+    color: #4c4b46;
+  }
+  .fulltext-inner p { margin-bottom: 10px; }
+
+  /* ---------- 拓展资源卡 ---------- */
+  .card--wide { grid-column: 1 / -1; }
+  .resource-desc { font-size: 0.9rem; color: var(--ink-light); margin: 4px 0 18px; }
+  .link-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; align-items: center; }
+  .link-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--ink);
+    min-width: 9.5em;
+  }
+  .link-chip {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-decoration: none;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--ink);
+    transition: border-color 0.25s, color 0.25s, background 0.25s, transform 0.2s;
+  }
+  .link-chip:hover { transform: translateY(-2px); }
+  .link-chip--bili { border-color: #f0a7bd; color: #c9556e; background: #fdf1f4; }
+  .link-chip--bili:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); }
+  .link-chip--wiki { border-color: #a9c6de; color: #3a6a94; background: #eef5fb; }
+  .link-chip--wiki:hover { border-color: var(--blue); background: var(--blue-soft); color: var(--blue-deep); }
+  .resource-note { font-size: 0.8rem; color: var(--ink-light); border-top: 2px dashed var(--border); padding-top: 12px; }
+
+  /* ---------- 关于我 ---------- */
+  .about {
+    background: var(--bg-soft);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 40px 44px;
+    margin-bottom: 70px;
+    box-shadow: 6px 6px 0 rgba(58, 58, 55, 0.1);
+    position: relative;
+  }
+  .about h2 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .about h2 em { font-style: normal; color: var(--accent-deep); }
+  .about p { font-size: 0.95rem; margin-bottom: 22px; max-width: 640px; }
+  .hobby-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--ink-light);
+    margin-bottom: 12px;
+  }
+  .hobby-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+  .hobby-tag {
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    color: var(--ink);
+    border: 2px solid var(--border);
+    background: var(--card-bg);
+    padding: 5px 16px;
+    border-radius: 999px;
+    transition: border-color 0.25s, color 0.25s, transform 0.25s;
+  }
+  .hobby-tag:hover { border-color: var(--accent); color: var(--accent-deep); transform: translateY(-2px); }
+
+  /* ---------- 页脚 ---------- */
+  footer {
+    border-top: 3px solid var(--ink);
+    text-align: center;
+    padding: 34px 24px 42px;
+    color: var(--ink-light);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+  footer .mark { color: var(--accent); margin: 0 6px; }
+
+  /* ---------- 手机端 ---------- */
+  @media (max-width: 640px) {
+    .nav { padding: 14px 20px; justify-content: center; }
+    nav a { margin: 0 12px; }
+    .hero { padding: 60px 0 46px; }
+    .hero h1 { font-size: 2rem; letter-spacing: 5px; }
+    .cards { grid-template-columns: 1fr; gap: 20px; margin-bottom: 56px; }
+    .card { padding: 22px 20px; }
+    .about { padding: 28px 22px; margin-bottom: 46px; }
+    .filters { gap: 8px; }
+    .filter-btn { padding: 5px 16px; }
+    .speech-bubble, .speed-lines, .deco-bubble { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deco-bubble bubble-1"></div>
+<div class="deco-bubble bubble-2"></div>
+<div class="deco-bubble bubble-3"></div>
+<div class="speed-lines"></div>
+<div class="speech-bubble">本周补番完毕！</div>
+
+<header>
+  <div class="nav">
+    <a href="#top" class="blog-name">番剧推荐<span>ANIME NOTES</span></a>
+    <nav>
+      <a href="#top">首页</a>
+      <a href="#articles">动漫题材</a>
+      <a href="#deep">深入了解</a>
+      <a href="#about">关于我</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <section class="hero">
+    <div class="hero-kicker">一本随手记的追番手帐</div>
+    <h1>番剧推荐</h1>
+    <p>你好呀，这里是刚入学、书包里还塞着平板的新大学生。课业之余最大的爱好就是看番、逛同人展、画一点二创。这个站是我的追番手帐：每看完一部值得说的番，就来写一页推荐语。</p>
+    <a href="#articles" class="btn" id="scrollBtn">看看最近发现了什么 ↓</a>
+  </section>
+
+  <section id="articles">
+    <h2 class="section-title">最 近 的 <em>追 番 笔 记</em></h2>
+    <p class="section-sub">每一格都是一个想安利给你的故事</p>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">全部</button>
+      <button class="filter-btn" data-filter="类别">类别</button>
+      <button class="filter-btn" data-filter="个人">个人</button>
+    </div>
+
+    <div class="cards" id="cardArea">
+
+      <article class="card" data-cat="类别">
+        <div class="card-meta"><span class="tag-cat">热血漫</span><span class="card-type">类别 · 第 1 格</span></div>
+        <h3>热血漫：《进击的巨人》与《灵能百分百》的两种燃法</h3>
+        <p class="summary">艾伦·耶格尔从墙内一路走向海对岸的敌人，影山茂夫明明是最强超能力者却连蜜蜂都不忍心伤害。一部把热血烧成悲壮，一部把热血烧成温柔——两种完全相反的燃法，我都想安利给你。</p>
+        <div class="fulltext">
+          <div class="fulltext-inner">
+            <p>先说《进击的巨人》。它教会我的事是：热血不总是让人沸腾的，也可以是让人发凉的。艾伦从"把巨人一只不剩地驱逐出去"喊到玛利亚之墙夺还战，利威尔兵长那一句"做出让你不后悔的选择"几乎是全番的题眼——每一次胜利都标好了价码，这才是它后劲十足的地方。</p>
+            <p>再说《灵能百分百》。影山茂夫（外号"龙套"）天生最强超能力，最想要的却是"用不着超能力也能变好"。师傅灵幻新隆是个一点超能力都没有的普通人，却总能在他快要爆发的时候拉住他："跑来哭诉的家伙才最狡猾。"最后决战那一集的作画疯到离谱，但真正封神的是结尾——最强的少年，学着鼓起勇气向喜欢的女孩递出信。</p>
+            <p>这两部放在同一个格子里是想说：热血漫的对手不一定是坏人，也可以是命运、是自己的力量、是"长大"这件事本身。现在轮到我这个新生的"巨人墙"了——高数，我来了。</p>
+          </div>
+        </div>
+        <button class="read-btn">阅读全文 →</button>
+      </article>
+
+      <article class="card" data-cat="类别">
+        <div class="card-meta"><span class="tag-cat">日常轻松漫</span><span class="card-type">类别 · 第 2 格</span></div>
+        <h3>日常轻松漫：《笨女孩》×《游戏3人娘》，笑到隔壁敲门</h3>
+        <p class="summary">花畑佳子能用脑袋硬生生撞碎一个西瓜，奥莉薇亚顶着金发碧眼却一句英语都不会说。这两部番的共同点是：剧情完全不讲道理，但笑点又密又准——写完作业瘫在椅子上看，十分钟就有一次"救命"的时刻。</p>
+        <div class="fulltext">
+          <div class="fulltext-inner">
+            <p>《笨女孩》的主角花畑佳子，智商成谜、体力爆表，最大的梦想是 banana（对，她管这个词叫梦想）。青梅竹马阿久津明每天的功课就是吐槽她，两人的对话像打乒乓球一样你来我往。它好笑的地方在于"不讲道理得很稳定"——你永远猜不到佳子下一步要干什么，但一定猜得到明君的表情。</p>
+            <p>《游戏3人娘》（あそびあそばせ）更绝：奥莉薇亚金发碧眼、生长在日本，一句英语都不会；野村香纯是学霸，英语考了2分；本田华子一心想当现充。三个中学女生凑成"游戏人生研究会"，表面是可爱社团日常，实际每一集都在才华的边缘疯狂试探——那句"我来给你变个狗狗的魔术吧"，我至今不敢二刷。</p>
+            <p>它们治好了我的周二晚上——比治愈系直接得多，是纯粹的、不管不顾的大笑。追这类番的建议：别在深夜戴着耳机看，笑出声很容易被室友误会有什么毛病。</p>
+          </div>
+        </div>
+        <button class="read-btn">阅读全文 →</button>
+      </article>
+
+      <article class="card" data-cat="类别">
+        <div class="card-meta"><span class="tag-cat">校园漫</span><span class="card-type">类别 · 第 3 格</span></div>
+        <h3>校园漫：《轻音少女》与差点废部的轻音部</h3>
+        <p class="summary">平泽唯把"轻音部"看成轻便音乐，误打误撞进了这个放学后只喝茶吃点心的社团。可就是这群人，把一场眼看要办不成的文化祭唱成了全番最亮的一格——中野梓入部那集我笑到打鸣，文化祭那首《Don't say "lazy"》我循环了整晚。</p>
+        <div class="fulltext">
+          <div class="fulltext-inner">
+            <p>《轻音少女》讲的是樱丘高中一个快要废部的轻音部：部长田井中律拉人，秋山澪写词，琴吹䌷出钱买茶具，平泽唯负责——看样子什么都不负责，只在关键时刻弹出救场的一句吉他。</p>
+            <p>它的聪明之处在于"小"：冲突不是拯救世界，而是"合宿的预算够不够""能不能凑齐四个人保住社团"。但这些小事被认真对待的样子，恰恰就是学生时代的真实质感——现在回头看，当年让我紧张到胃疼的，也全是这种小事。</p>
+            <p>文化祭那一集，唯在台上哭着唱完，梓在台下从嫌弃到眼眶发红。看完当天我就报名了学校的动漫社。虽然我这辈子大概率不会站上什么舞台，但那部番让我想起：校园漫之所以好看，是因为它替我们保留了"认真对待小事"的权利。</p>
+          </div>
+        </div>
+        <button class="read-btn">阅读全文 →</button>
+      </article>
+
+      <article class="card" data-cat="个人">
+        <div class="card-meta"><span class="tag-cat">悬疑解密漫</span><span class="card-type">个人私藏 · 第 4 格</span></div>
+        <h3>悬疑解密漫：《来自新世界》与《夏日重现》</h3>
+        <p class="summary">渡边早季在千年后"和平"的世界里，慢慢拼出文明真正的代价；网代慎平在夏日岛上一次次死回七天之前，只为救回小舟潮。一部是慢热的世界观悬疑，一部是分秒必争的时间循环——相同点是：千万别提前看解说。</p>
+        <div class="fulltext">
+          <div class="fulltext-inner">
+            <p>《来自新世界》是那种"前十集以为在看田园日常，后十集发现自己在看 horror"的番。渡边早季和觉、瞬他们在神栖六町长大，一切温柔得不像话——直到早季读到"图书馆禁忌"，才慢慢发现这个千年乌托邦是用什么换来的。它几乎不靠 jump scare，全靠世界观一层层剥开时的寒意，看完之后我盯着片尾字幕发呆了很久。</p>
+            <p>《夏日重现》正好相反，节奏快到不留喘息：网代慎平回乡参加青梅竹马小舟潮的葬礼，然后在一个夏天里反复死去、反复回到七天前。每一轮循环他都比上一轮多知道一点点，观众跟着他一起做排除法——"谁是影子"这个谜题，几乎每一集都在推翻我上一集的答案。小舟澪那句"慎平君去哪里都要带着我哦"听起来是撒娇，后面再想起会起鸡皮疙瘩。</p>
+            <p>两部放一起推荐是有私心的：一部教你"慢"着猜，一部逼你"快"着猜。共同的追番守则只有一条——关弹幕、别查百科、自己想。看完《夏日重现》那晚，我室友顶着黑眼圈跟我说"你干的好事"，是我今年最满意的一次安利。</p>
+          </div>
+        </div>
+        <button class="read-btn">阅读全文 →</button>
+      </article>
+
+      <article class="card card--wide" id="deep" data-keep="1">
+        <div class="card-meta"><span class="tag-cat">拓展资源</span><span class="card-type">链接导航 · 第 5 格</span></div>
+        <h3>🔗 深入了解：想更了解上面这些番？</h3>
+        <p class="resource-desc">每部番配了两个入口：B 站链接直达站内搜索（可以找正片、剪辑和 UP 主的名场面分析视频），萌娘百科链接是词条页（角色设定、剧情梳理和名场面考据都在里面）。点击即可在新标签页打开。</p>
+
+        <div class="link-row">
+          <span class="link-title">《进击的巨人》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=进击的巨人 名场面解析" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/进击的巨人" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《灵能百分百》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=灵能百分百 名场面" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/灵能百分百" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《笨女孩》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=笨女孩 高光" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/笨女孩" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《游戏3人娘》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=游戏3人娘 来玩游戏吧" target="_blank" rel="noopener">▶ B站 · 搜索</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/来玩游戏吧" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《轻音少女》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=轻音少女 文化祭" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/轻音少女" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《来自新世界》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=来自新世界 解析" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/来自新世界" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <div class="link-row">
+          <span class="link-title">《夏日重现》</span>
+          <a class="link-chip link-chip--bili" href="https://search.bilibili.com/all?keyword=夏日重现 解析" target="_blank" rel="noopener">▶ B站 · 名场面解析</a>
+          <a class="link-chip link-chip--wiki" href="https://zh.moegirl.org.cn/夏日重现" target="_blank" rel="noopener">📖 萌娘百科</a>
+        </div>
+
+        <p class="resource-note">小提示：B 站搜索结果受地区和版权影响，个别番剧可能搜不到正片，但剪辑和解析视频一般都在；萌娘百科词条可以顺藤摸瓜找到"名场面"分节，配合第 1-4 格的笔记一起看效果最好。</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <h2>关 于 <em>我</em></h2>
+    <p>你好，我是这本追番手帐的主人——一名刚入学的大一学生，入宅八年（从小学生守着电视点播算起），喜欢看番、逛同人展、给喜欢的角色画一点自娱自乐的二创。开这个站的目的很简单：把看过的好番认真记下来，顺便练习把"好看！"写成一段说得出口的理由。等毕业时回头翻，应该会是一本挺厚的青春档案。</p>
+    <div class="hobby-title">最近循环的几部：</div>
+    <div class="hobby-tags">
+      <span class="hobby-tag">🔥《进击的巨人》艾伦·耶格尔 & 利威尔兵长</span>
+      <span class="hobby-tag">⚡《灵能百分百》影山茂夫 & 灵幻新隆</span>
+      <span class="hobby-tag">🍌《笨女孩》花畑佳子 & 阿久津明</span>
+      <span class="hobby-tag">🎮《游戏3人娘》奥莉薇 & 野村香纯 & 本田华子</span>
+      <span class="hobby-tag">🎹《轻音少女》平泽唯 & 中野梓</span>
+      <span class="hobby-tag">🌾《来自新世界》渡边早季</span>
+      <span class="hobby-tag">🌊《夏日重现》网代慎平 & 小舟澪</span>
+      <span class="hobby-tag">🎨 同人二创 · 画同人图</span>
+      <span class="hobby-tag">🎪 漫展 & only 场刊收集</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  愿你下一部点开的番，刚好值得熬夜<span class="mark">✦</span>番剧推荐，下话再会
+</footer>
+
+<script>
+  // 平滑滚动（html 已有 scroll-behavior，这里兜底兼容）
+  document.getElementById('scrollBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('articles').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // 分类筛选
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('#cardArea .card');
+
+  filterBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      filterBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      const target = btn.dataset.filter;
+      cards.forEach(function (card) {
+        const keep = card.dataset.keep === '1'; // 拓展资源卡始终显示
+        const show = keep || target === 'all' || card.dataset.cat === target;
+        card.style.display = show ? 'flex' : 'none';
+      });
+    });
+  });
+
+  // 展开正文 / 收起
+  document.querySelectorAll('.read-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const fulltext = btn.previousElementSibling; // .fulltext
+      const isOpen = fulltext.classList.toggle('open');
+      btn.textContent = isOpen ? '收起 ↑' : '阅读全文 →';
+    });
+  });
+</script>
+
+</body>
+</html>
